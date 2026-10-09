@@ -4,6 +4,7 @@ Run with:  python app.py   then open http://127.0.0.1:5000
 """
 import csv
 import io
+import os
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 
@@ -15,7 +16,11 @@ import forecasting as fc
 import insights as ins
 
 app = Flask(__name__)
-app.secret_key = "change-me-for-real-use"  # needed for flash messages
+app.secret_key = os.environ.get("SECRET_KEY", "change-me-for-real-use")  # needed for flash messages
+
+# Create tables (and demo data on first run) whenever the app is imported,
+# so it also works under gunicorn on Render, not only with `python app.py`.
+db.init_db()
 
 
 # ---------------------------------------------------------------- helpers
@@ -337,5 +342,4 @@ def demo_delete():
 
 
 if __name__ == "__main__":
-    db.init_db()
     app.run(debug=True)
