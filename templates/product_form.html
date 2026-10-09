@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Add product' if mode == 'new' else 'Edit product' }}{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div><h1>{{ 'Add product' if mode == 'new' else 'Edit product' }}</h1>
+  <p class="muted">Prices are in Indian Rupees (₹).</p></div>
+</header>
+<div class="card form-card">
+  <form method="post" class="form" data-validate novalidate>
+    <label>Product name
+      <input type="text" name="name" maxlength="80" required value="{{ product.get('name', '') }}" placeholder="e.g. Handmade Beaded Earrings"></label>
+    <label>Category
+      <select name="category" required>
+        {% for c in categories %}<option value="{{ c }}" {{ 'selected' if product.get('category') == c }}>{{ c|title }}</option>{% endfor %}
+      </select></label>
+    <div class="form-row">
+      <label>Selling price (₹)<input type="number" name="price" min="0" step="0.01" required value="{{ product.get('price', '') }}"></label>
+      <label>Cost price (₹)<input type="number" name="cost" min="0" step="0.01" required value="{{ product.get('cost', '') }}"></label>
+    </div>
+    <div class="form-row">
+      <label>Current stock<input type="number" name="stock" min="0" step="1" required value="{{ product.get('stock', 0) }}"></label>
+      <label>Minimum stock alert level<input type="number" name="min_stock" min="0" step="1" required value="{{ product.get('min_stock', 5) }}"></label>
+    </div>
+    <div class="form-actions">
+      <button class="btn" type="submit">{{ 'Add product' if mode == 'new' else 'Save changes' }}</button>
+      <a class="btn btn-ghost" href="{{ url_for('products') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

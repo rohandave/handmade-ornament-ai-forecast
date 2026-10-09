@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div><h1>Reports</h1><p class="muted">Summaries of your sales.</p></div>
+  <a class="btn btn-ghost" href="{{ url_for('sales_export') }}">⬇ Export all sales (CSV)</a>
+</header>
+
+{% macro summary_table(title, rows) %}
+<div class="card">
+  <h2>{{ title }}</h2>
+  {% if rows %}<div class="table-wrap"><table>
+    <thead><tr><th>Period</th><th class="num">Orders</th><th class="num">Units</th><th class="num">Revenue</th></tr></thead>
+    <tbody>{% for r in rows %}<tr><td>{{ r.period }}</td><td class="num">{{ r.orders }}</td><td class="num">{{ r.units }}</td><td class="num">{{ r.revenue|inr }}</td></tr>{% endfor %}</tbody>
+  </table></div>{% else %}<p class="empty">No sales recorded yet.</p>{% endif %}
+</div>
+{% endmacro %}
+
+<section class="grid-3">
+  {{ summary_table('Daily (last 14 days with sales)', daily) }}
+  {{ summary_table('Weekly (last 12 weeks)', weekly) }}
+  {{ summary_table('Monthly', monthly) }}
+</section>
+
+<section class="grid-2">
+  <div class="card">
+    <h2>Revenue by category</h2>
+    {% if cat_values %}<div class="chart-box"><canvas id="catChart"></canvas></div>
+    {% else %}<p class="empty">No sales to chart yet.</p>{% endif %}
+  </div>
+  <div class="card">
+    <h2>Best-selling products</h2>
+    {% if top %}<div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Product</th><th class="num">Units</th><th class="num">Revenue</th></tr></thead>
+      <tbody>{% for name, v in top %}<tr><td>{{ loop.index }}</td><td>{{ name }}</td><td class="num">{{ v[0] }}</td><td class="num">{{ v[1]|inr }}</td></tr>{% endfor %}</tbody>
+    </table></div>{% else %}<p class="empty">No sales recorded yet.</p>{% endif %}
+  </div>
+</section>
+
+<div class="card">
+  <h2>Forecast vs actual (last 30 days)</h2>
+  <p class="muted small">We "rewind" 30 days, forecast the following 30 days using only data available then, and compare with what really sold.</p>
+  {% if compare %}<div class="table-wrap"><table>
+    <thead><tr><th>Product</th><th class="num">Forecast units</th><th class="num">Actual units</th><th class="num">Difference</th></tr></thead>
+    <tbody>{% for c in compare %}<tr><td>{{ c.name }}</td><td class="num">{{ c.predicted_units }}</td><td class="num">{{ c.actual_units }}</td>
+      <td class="num">{% if c.error_pct is not none %}{{ c.error_pct }}%{% else %}—{% endif %}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<p class="empty">Not enough sales history yet (about 6 weeks are needed) to compare forecasts with actual sales.</p>{% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+{% if cat_values %}<script>OrnaCharts.doughnut("catChart", {{ cat_labels|tojson }}, {{ cat_values|tojson }});</script>{% endif %}
+{% endblock %}

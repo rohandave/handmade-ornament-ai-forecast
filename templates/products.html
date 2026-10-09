@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Products{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div><h1>Products</h1><p class="muted">Everything you make and sell.</p></div>
+  <a class="btn" href="{{ url_for('product_new') }}">+ Add product</a>
+</header>
+<div class="card">
+  {% if products %}
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>ID</th><th>Name</th><th>Category</th><th class="num">Price</th><th class="num">Cost</th><th class="num">Stock</th><th class="num">Min</th><th></th></tr></thead>
+    <tbody>
+    {% for p in products %}
+      <tr>
+        <td>#{{ p.id }}</td>
+        <td>{{ p.name }} {% if p.is_demo %}<span class="badge">Demo</span>{% endif %}</td>
+        <td>{{ p.category|title }}</td>
+        <td class="num">{{ p.price|inr }}</td>
+        <td class="num">{{ p.cost|inr }}</td>
+        <td class="num">{% if p.stock <= p.min_stock %}<span class="pill pill-warn">{{ p.stock }}</span>{% else %}{{ p.stock }}{% endif %}</td>
+        <td class="num">{{ p.min_stock }}</td>
+        <td class="actions">
+          <a class="btn btn-small btn-ghost" href="{{ url_for('product_edit', pid=p.id) }}">Edit</a>
+          <form method="post" action="{{ url_for('product_delete', pid=p.id) }}" data-confirm="Delete '{{ p.name }}'? All its sales records will also be deleted.">
+            <button class="btn btn-small btn-ghost danger">Delete</button></form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}
+  <p class="empty">You haven't added any products yet. <a href="{{ url_for('product_new') }}">Add your first product</a>.</p>
+  {% endif %}
+</div>
+{% endblock %}

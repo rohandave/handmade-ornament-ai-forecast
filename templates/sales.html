@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Sales{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div><h1>Sales</h1><p class="muted">Record new sales and browse your history.</p></div>
+  <a class="btn btn-ghost" href="{{ url_for('sales_export', date_from=filters.date_from, date_to=filters.date_to, product_id=filters.product_id) }}">⬇ Export CSV</a>
+</header>
+
+<div class="card" id="add-sale">
+  <h2>Record a sale</h2>
+  {% if products %}
+  <form method="post" action="{{ url_for('sale_add') }}" class="form form-inline" data-validate novalidate id="saleForm">
+    <label>Date<input type="date" name="sale_date" value="{{ today }}" max="{{ today }}" required></label>
+    <label>Product
+      <select name="product_id" id="saleProduct" required>
+        <option value="">Choose…</option>
+        {% for p in products %}<option value="{{ p.id }}" data-price="{{ p.price }}" data-stock="{{ p.stock }}">{{ p.name }} ({{ p.stock }} in stock)</option>{% endfor %}
+      </select></label>
+    <label>Quantity<input type="number" name="quantity" id="saleQty" min="1" step="1" value="1" required></label>
+    <label>Price per unit (₹)<input type="number" name="unit_price" id="salePrice" min="0" step="0.01" required></label>
+    <div class="total-box">Total<strong id="saleTotal">₹0</strong></div>
+    <button class="btn" type="submit">Save sale</button>
+  </form>
+  {% else %}<p class="empty">Add a product first, then you can record sales.</p>{% endif %}
+</div>
+
+<div class="card">
+  <h2>Sales history</h2>
+  <form method="get" class="form form-inline filters">
+    <label>From<input type="date" name="date_from" value="{{ filters.date_from }}"></label>
+    <label>To<input type="date" name="date_to" value="{{ filters.date_to }}"></label>
+    <label>Product
+      <select name="product_id"><option value="">All products</option>
+        {% for p in products %}<option value="{{ p.id }}" {{ 'selected' if filters.product_id == p.id }}>{{ p.name }}</option>{% endfor %}
+      </select></label>
+    <button class="btn btn-ghost" type="submit">Apply filters</button>
+    <a class="btn btn-ghost" href="{{ url_for('sales') }}">Clear</a>
+  </form>
+  {% if sales %}
+  <p class="muted">{{ sales|length }} record(s) · {{ units }} units · {{ total|inr }}</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Date</th><th>Product</th><th class="num">Qty</th><th class="num">Price</th><th class="num">Total</th><th></th></tr></thead>
+    <tbody>
+    {% for s in sales[:200] %}
+      <tr><td>{{ s.sale_date|indian_date }}</td>
+        <td>{{ s.product_name }} {% if s.is_demo %}<span class="badge">Demo</span>{% endif %}</td>
+        <td class="num">{{ s.quantity }}</td><td class="num">{{ s.unit_price|inr }}</td><td class="num">{{ s.total|inr }}</td>
+        <td class="actions"><form method="post" action="{{ url_for('sale_delete', sid=s.id) }}" data-confirm="Delete this sale? The units will be added back to stock.">
+          <button class="btn btn-small btn-ghost danger">Delete</button></form></td></tr>
+    {% endfor %}
+    </tbody></table></div>
+  {% if sales|length > 200 %}<p class="muted small">Showing the latest 200 records. Use filters or CSV export to see more.</p>{% endif %}
+  {% else %}<p class="empty">No sales match these filters.</p>{% endif %}
+</div>
+{% endblock %}

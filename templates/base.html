@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}OrnaCast AI{% endblock %} · OrnaCast AI</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="{{ url_for('static', filename='js/chart.umd.js') }}"></script>
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle" aria-label="Open menu">☰</button>
+<aside class="sidebar" id="sidebar">
+  <div class="brand"><span class="brand-gem">◈</span> OrnaCast <small>AI</small></div>
+  <nav>
+    {% set nav = [('dashboard','Dashboard','▦'),('products','Products','❖'),('sales','Sales','₹'),
+                  ('forecast_page','Sales Forecast','↗'),('inventory','Inventory Insights','☰'),('reports','Reports','▤')] %}
+    {% for endpoint, label, icon in nav %}
+      <a href="{{ url_for(endpoint) }}" class="{{ 'active' if request.endpoint == endpoint or (endpoint=='products' and request.endpoint and request.endpoint.startswith('product_')) }}">
+        <span class="ico">{{ icon }}</span>{{ label }}</a>
+    {% endfor %}
+  </nav>
+  {% if has_demo %}
+  <div class="demo-box">
+    <span class="badge">Demo data</span>
+    <p>Sample products and sales are loaded for practice.</p>
+    <form method="post" action="{{ url_for('demo_reset') }}" data-confirm="Reset the demo data to its original state?">
+      <button class="btn btn-small btn-ghost">Reset demo</button></form>
+    <form method="post" action="{{ url_for('demo_delete') }}" data-confirm="Delete all demo products and sales? Your own records will be kept.">
+      <button class="btn btn-small btn-ghost danger">Delete demo</button></form>
+  </div>
+  {% else %}
+  <div class="demo-box">
+    <p>No demo data loaded.</p>
+    <form method="post" action="{{ url_for('demo_reset') }}"><button class="btn btn-small btn-ghost">Load demo data</button></form>
+  </div>
+  {% endif %}
+</aside>
+<main class="content">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}<div class="flash flash-{{ cat }}">{{ msg }}</div>{% endfor %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

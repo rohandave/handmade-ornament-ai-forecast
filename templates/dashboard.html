@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div><h1>Dashboard</h1><p class="muted">A quick look at how your handmade jewellery business is doing.</p></div>
+  <a class="btn" href="{{ url_for('sales') }}#add-sale">+ Record a sale</a>
+</header>
+
+<section class="cards">
+  <div class="card stat"><span class="stat-label">Total revenue</span><span class="stat-value">{{ total_revenue|inr }}</span></div>
+  <div class="card stat"><span class="stat-label">Total orders</span><span class="stat-value">{{ total_orders }}</span></div>
+  <div class="card stat"><span class="stat-label">Units sold</span><span class="stat-value">{{ units }}</span></div>
+  <div class="card stat"><span class="stat-label">Best seller</span>
+    <span class="stat-value small">{{ best[0] if best else '—' }}</span>
+    {% if best %}<span class="muted">{{ best[1] }} units</span>{% endif %}</div>
+  <div class="card stat accent"><span class="stat-label">Forecast: next 30 days</span>
+    {% if next_month.total_units %}
+      <span class="stat-value">{{ next_month.total_units }} units</span>
+      <span class="muted">≈ {{ next_month.total_revenue|inr }} <em>(estimate)</em></span>
+    {% else %}<span class="stat-value small">Not enough data</span><span class="muted">Record some sales first</span>{% endif %}
+  </div>
+</section>
+
+<section class="grid-2">
+  <div class="card">
+    <h2>Monthly revenue</h2>
+    {% if month_values %}<div class="chart-box"><canvas id="monthlyChart"></canvas></div>
+    {% else %}<p class="empty">No sales yet. <a href="{{ url_for('sales') }}">Record your first sale</a> to see trends.</p>{% endif %}
+  </div>
+  <div class="card">
+    <h2>Weekly units sold</h2>
+    {% if week_values %}<div class="chart-box"><canvas id="weeklyChart"></canvas></div>
+    {% else %}<p class="empty">Weekly trends will appear once you have sales.</p>{% endif %}
+  </div>
+</section>
+
+<section class="grid-2">
+  <div class="card">
+    <h2>Low-stock alerts</h2>
+    {% if low_stock %}
+      <ul class="list">
+      {% for p in low_stock %}
+        <li><span>{{ p.name }}</span><span class="pill pill-warn">{{ p.stock }} left · min {{ p.min_stock }}</span></li>
+      {% endfor %}</ul>
+    {% else %}<p class="empty">All products are above their minimum stock level. 🎉</p>{% endif %}
+  </div>
+  <div class="card">
+    <h2>Business insights</h2>
+    <ul class="insights">
+      {% for i in insights %}<li class="insight insight-{{ i.type }}">{{ i.text }}</li>{% endfor %}
+    </ul>
+    <p class="muted small">Calculated from your own sales and stock data.</p>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{% if month_values %}
+<script>
+  OrnaCharts.bar("monthlyChart", {{ month_labels|tojson }}, {{ month_values|tojson }}, "Revenue (₹)");
+  OrnaCharts.line("weeklyChart", {{ week_labels|tojson }}, {{ week_values|tojson }}, "Units");
+</script>
+{% endif %}
+{% endblock %}

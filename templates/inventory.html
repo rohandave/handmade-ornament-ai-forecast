@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Inventory Insights{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div><h1>Inventory Insights</h1><p class="muted">Stock compared with the next 30 days of estimated demand.</p></div>
+</header>
+<p class="note">These are <strong>recommendations based on estimates</strong>, not guaranteed outcomes. Use your own judgement about festivals, orders and lead times.</p>
+
+<div class="card">
+  <h2>Stock recommendations</h2>
+  {% if items %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Product</th><th class="num">In stock</th><th class="num">30-day demand (est.)</th><th>Status</th><th class="num">Suggested restock</th></tr></thead>
+    <tbody>
+    {% for i in items %}
+      <tr><td>{{ i.name }}</td><td class="num">{{ i.stock }}</td>
+        <td class="num">{{ i.forecast_units if i.confidence != 'none' else '—' }}</td>
+        <td>{% if i.status == 'restock' %}<span class="pill pill-warn">May run out</span>
+            {% elif i.status == 'excess' %}<span class="pill pill-info">Excess stock</span>
+            {% elif i.status == 'no_demand' %}<span class="pill pill-info">No recent demand</span>
+            {% else %}<span class="pill pill-ok">Looks fine</span>{% endif %}</td>
+        <td class="num">{{ ('+' ~ i.suggested) if i.suggested else '—' }}</td></tr>
+    {% endfor %}
+    </tbody></table></div>
+  <p class="muted small">Suggested restock = estimated 30-day demand + your minimum stock level − current stock.</p>
+  {% else %}<p class="empty">Add products and record sales to get stock recommendations.</p>{% endif %}
+</div>
+
+<div class="card">
+  <h2>Business insights</h2>
+  <ul class="insights">{% for i in insights %}<li class="insight insight-{{ i.type }}">{{ i.text }}</li>{% endfor %}</ul>
+</div>
+{% endblock %}

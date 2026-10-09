@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Sales Forecast{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div><h1>Sales Forecast</h1><p class="muted">Estimate future demand from your past sales.</p></div>
+</header>
+
+<div class="card">
+  <form class="form form-inline" id="forecastForm">
+    <label>Product
+      <select id="fcProduct"><option value="">All products</option>
+        {% for p in products %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}
+      </select></label>
+    <label>Forecast period
+      <select id="fcDays"><option value="7">Next 7 days</option><option value="30" selected>Next 30 days</option><option value="90">Next 90 days</option></select></label>
+    <button class="btn" type="submit" id="fcButton">Generate Forecast</button>
+  </form>
+</div>
+
+<div id="fcError" class="flash flash-error" hidden></div>
+<div id="fcEmpty" class="card"><p class="empty">Choose a product and period, then click <strong>Generate Forecast</strong>.</p></div>
+
+<div id="fcResult" hidden>
+  <section class="cards">
+    <div class="card stat accent"><span class="stat-label">Estimated units</span><span class="stat-value" id="fcUnits">–</span></div>
+    <div class="card stat accent"><span class="stat-label">Estimated revenue</span><span class="stat-value" id="fcRevenue">–</span></div>
+    <div class="card stat"><span class="stat-label">Method</span><span class="stat-value small" id="fcMethod">–</span></div>
+    <div class="card stat"><span class="stat-label">Confidence</span><span class="stat-value small" id="fcConfidence">–</span></div>
+  </section>
+  <div class="card">
+    <h2>Actual sales vs forecast (units per day)</h2>
+    <div class="chart-box tall"><canvas id="fcChart"></canvas></div>
+  </div>
+  <div class="card">
+    <h2>How was this calculated?</h2>
+    <p id="fcExplain"></p>
+    <p class="muted small" id="fcBacktest"></p>
+    <p class="note">⚠ These numbers are <strong>statistical estimates</strong>, not guarantees, and are not produced by a large language model. They get better as you record more sales history.</p>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script>OrnaForecast.init();</script>{% endblock %}
